@@ -33,6 +33,7 @@ node_modules/
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/app/mcp/*.json
 
 # Agents (share guidelines and skills via .ai directory in Laravel Boost instead)
 .agents/

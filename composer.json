@@ -1,16 +1,20 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "adiachenko/starter-kit-laravel",
+    "name": "adiachenko/4lmanac",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Google Calendar MCP server that provides full calendar management.",
     "keywords": [
         "laravel",
-        "framework"
+        "framework",
+        "google",
+        "calendar",
+        "mcp"
     ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "laravel/framework": "^12.0"
+        "laravel/framework": "^12.0",
+        "laravel/mcp": "^0.5"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.1",
@@ -43,7 +47,6 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php artisan migrate --force",
             "npm install",
             "@php artisan boost:install"
         ],
@@ -71,13 +74,6 @@
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi",
-            "npm install",
-            "@php artisan boost:install"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"

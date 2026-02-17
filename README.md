@@ -1,38 +1,19 @@
-# Laravel Starter Kit
+# 4lmanac
 
-## What's Different from the Official Laravel Starter
-
-- PHP `>=8.4` baseline with `declare(strict_types=1)` enforced by Pint.
-- The default boilerplate is lean and backend/API-friendly rather than frontend-scaffold-heavy.
-- `AppServiceProvider` comes preconfigured with useful safeguards like immutable dates and stricter Eloquent.
-- Models are unguarded by default because we trust our validation more than our patience to keep `$fillable` in sync.
-- Tooling is already wired: Pest (parallel tests), PHPStan + Larastan at max level, and Rector for refactors.
-- Improved testing setup with clear conventions and a dedicated suite for external dependencies.
-- Laravel Boost configuration prompts are included during setup, and sensible `.gitignore` rules for Boost are preconfigured. Comes bundled with .ai directory as a starting point for your own AI overrides.
-- SQLite is set as the default database, offering a clean, minimal starting point that you can easily customize for your preferred database setup.
-- Formatting is consistent out of the box: Pint for PHP and Prettier for everything else.
+A Google Calendar MCP server that provides full calendar management — creating, updating, and deleting events — unlike the read-only integrations offered by ChatGPT and Claude.
 
 ## Installation
 
-Create application (replace `example-app` with desired project name):
-
 ```bash
-composer create-project adiachenko/starter-kit-laravel --prefer-dist example-app
-```
+git clone https://github.com/adiachenko/4lmanac.git
 
-> Keep in mind that `composer create-project` already does most of the setup for you. It will install dependencies, create .env file, generate app key, and prompt you to configure Laravel Boost.
-
-Navigate to your project and complete the setup:
-
-```bash
 cd example-app
 
-# Initialize git repo
-git init
-sh install-git-hooks.sh
+# Initialize the application
+composer install
 
-# Optionally, scaffold API routes with Sanctum or Passport (add --passport flag)
-php artisan install:api
+# Optionally, install git hooks for development
+sh install-git-hooks.sh
 ```
 
 Installed Git hooks:
@@ -90,3 +71,97 @@ Recommended setup for consistent formatting:
 ## VSCode/Cursor Setup
 
 VSCode and Cursor will automatically detect formatting settings defined in the `.vscode/` folder – no additional setup is needed beyond installing the suggested extensions.
+
+## Google Calendar MCP Setup
+
+### Prerequisites
+
+1. Create a Google Cloud project.
+2. Enable Google Calendar API in that project.
+3. Configure OAuth consent screen (Google Auth Platform):
+    - Audience: `External` (or `Internal` if your Workspace policy requires it).
+    - Add test users while app is in testing mode.
+    - Add scopes:
+        - `openid`
+        - `https://www.googleapis.com/auth/userinfo.email`
+        - `https://www.googleapis.com/auth/userinfo.profile`
+        - `https://www.googleapis.com/auth/calendar`
+4. Create OAuth clients:
+    - MCP client auth client(s) for ChatGPT and Claude callback URIs.
+    - Bootstrap client for the shared calendar token flow.
+
+### Environment Configuration
+
+Set these variables in `.env`:
+
+```env
+GOOGLE_OAUTH_CLIENT_ID=
+GOOGLE_OAUTH_CLIENT_SECRET=
+GOOGLE_OAUTH_REDIRECT_URI=http://127.0.0.1:8000/oauth/google/bootstrap/callback
+GOOGLE_OAUTH_ALLOWED_AUDIENCES=
+
+GOOGLE_CALENDAR_DEFAULT_ID=primary
+
+GOOGLE_EXTERNAL_TEST_CALENDAR_ID=
+```
+
+Field notes:
+
+- `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` / `GOOGLE_OAUTH_REDIRECT_URI` are for the shared token bootstrap flow.
+- `GOOGLE_OAUTH_ALLOWED_AUDIENCES` must include the OAuth client IDs used by MCP clients (ChatGPT/Claude), comma-separated.
+- Required incoming OAuth scopes are fixed in app config: `openid` and `https://www.googleapis.com/auth/userinfo.email`.
+
+### Shared Token Bootstrap (one-time)
+
+1. Run:
+
+```bash
+php artisan app:google-calendar:bootstrap
+```
+
+2. Open the printed URL, sign in with the shared Google account, and grant access.
+3. Google redirects to:
+    - `GET /oauth/google/bootstrap/callback`
+4. On success, the app stores token data in:
+    - `storage/app/mcp/google-calendar-tokens.json`
+
+Check token state:
+
+```bash
+php artisan app:google-calendar:token:status
+```
+
+### External Test Calendar Setup
+
+1. Create a dedicated calendar used only for integration tests.
+2. Copy its calendar ID into `GOOGLE_EXTERNAL_TEST_CALENDAR_ID`.
+3. Keep real meetings out of that calendar.
+4. Tests create temporary events with `MCP_TMP_` prefix and clean them up.
+
+### Runbook
+
+Local feature tests (mocked Google API):
+
+```bash
+php artisan test --compact --testsuite=Feature
+```
+
+External integration tests (real Google API):
+
+```bash
+php artisan test --compact --testsuite=External
+```
+
+### Common Errors
+
+- `redirect_uri_mismatch`: OAuth client redirect URI does not exactly match `GOOGLE_OAUTH_REDIRECT_URI`.
+- `invalid audience`: incoming token `aud` is not listed in `GOOGLE_OAUTH_ALLOWED_AUDIENCES`.
+- `insufficient_scope`: incoming client token is missing one of the required scopes (`openid`, `https://www.googleapis.com/auth/userinfo.email`).
+- Missing refresh token during bootstrap: ensure auth URL requests `access_type=offline` and `prompt=consent`.
+
+### Secret Rotation and Revocation
+
+1. Rotate OAuth client secrets in Google Cloud.
+2. Update `.env` values.
+3. Delete `storage/app/mcp/google-calendar-tokens.json`.
+4. Run bootstrap flow again to mint new shared refresh token.
