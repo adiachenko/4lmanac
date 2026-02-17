@@ -1,0 +1,50 @@
+# MacOS
+.DS_Store
+Thumbs.db
+
+# Composer
+vendor/
+/auth.json
+
+# NPM
+node_modules/
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Caches
+.phpunit.cache/
+.php-cs-fixer.cache
+
+# Log files
+*.log
+
+# Assets
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+
+# Agents (share guidelines and skills via .ai directory in Laravel Boost instead)
+.agents/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/skills/
+.junie/
+.mcp.json
+boost.json
+opencode.json
+AGENTS.md
+CLAUDE.md
+GEMINI.md
