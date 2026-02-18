@@ -4,10 +4,20 @@ services:
     restart: unless-stopped
     environment:
       PHP_ENV: production
-      FRANKENPHP_MODE: worker
-      FRANKENPHP_WORKERS: 2
-      FRANKENPHP_MAX_REQUESTS: 500
+      SERVER_NAME: 4lmanac.adiachenko.com
+      CADDY_TLS_MODE: file
+      CADDY_TLS_CERT_FILE: /certs/origin.crt
+      CADDY_TLS_KEY_FILE: /certs/origin.key
     ports:
-      - 8000:80
+      - 8001:80
+      - 8401:443
     volumes:
       - ./:/opt/project
+      - ./storage/frankenstack/certs:/certs:ro
+      - ./storage/frankenstack/caddy/data:/data
+      - ./storage/frankenstack/caddy/config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 1
