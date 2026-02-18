@@ -73,7 +73,7 @@ Registered tools:
 1. MCP client sends request to `/mcp` with `Authorization: Bearer <token>`.
 2. Middleware validates token by calling configured Google token-info endpoint.
 3. Middleware checks:
-    - token audience in `services.google_mcp.oauth_allowed_audiences`
+    - token audience in `services.google_mcp.oauth_allowed_audiences` (matches either `aud` or `azp`)
     - token scopes include all `services.google_mcp.mcp_required_scopes`
 4. Tool validates payload, calls `GoogleCalendarService`, and returns structured MCP content.
 5. Service uses `GoogleCalendarClient` for Google API requests.

@@ -162,7 +162,7 @@ php artisan test --compact --testsuite=External
 ### Common Errors
 
 - `redirect_uri_mismatch`: OAuth client redirect URI does not exactly match `GOOGLE_OAUTH_REDIRECT_URI`.
-- `invalid audience`: incoming token `aud` is not listed in `GOOGLE_OAUTH_ALLOWED_AUDIENCES`.
+- `invalid audience`: neither incoming token `aud` nor `azp` is listed in `GOOGLE_OAUTH_ALLOWED_AUDIENCES`.
 - `insufficient_scope`: incoming client token is missing one of the required scopes (`openid`, `https://www.googleapis.com/auth/userinfo.email`).
 - Missing refresh token during bootstrap: ensure auth URL requests `access_type=offline` and `prompt=consent`.
 

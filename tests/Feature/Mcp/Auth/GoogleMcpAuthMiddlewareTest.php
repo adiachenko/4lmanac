@@ -46,6 +46,36 @@ test('rejects requests with invalid audience', function (): void {
     $response->assertUnauthorized();
 });
 
+test('accepts requests when azp is allowed even when aud is not allowed', function (): void {
+    Http::fake([
+        'https://oauth2.googleapis.com/tokeninfo*' => Http::response([
+            'aud' => 'unknown-client.apps.googleusercontent.com',
+            'azp' => 'chatgpt-client.apps.googleusercontent.com',
+            'scope' => 'openid https://www.googleapis.com/auth/userinfo.email',
+            'sub' => 'subject-1',
+        ]),
+    ]);
+
+    $response = $this->withHeaders([
+        'Authorization' => 'Bearer token-1',
+    ])->postJson('/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => '1',
+        'method' => 'initialize',
+        'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => new stdClass,
+            'clientInfo' => [
+                'name' => 'test-client',
+                'version' => '1.0.0',
+            ],
+        ],
+    ]);
+
+    $response->assertOk();
+    $response->assertHeader('MCP-Session-Id');
+});
+
 test('rejects requests with missing required scopes', function (): void {
     Http::fake([
         'https://oauth2.googleapis.com/tokeninfo*' => Http::response([

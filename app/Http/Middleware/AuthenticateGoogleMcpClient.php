@@ -42,14 +42,25 @@ class AuthenticateGoogleMcpClient
         /** @var array<string, mixed>|null $payload */
         $payload = $response->json();
 
-        $audience = is_string($payload['aud'] ?? null)
-            ? $payload['aud']
-            : (is_string($payload['azp'] ?? null) ? $payload['azp'] : null);
+        $audienceCandidates = array_values(array_filter([
+            is_string($payload['aud'] ?? null) ? $payload['aud'] : null,
+            is_string($payload['azp'] ?? null) ? $payload['azp'] : null,
+        ], static fn (mixed $value): bool => is_string($value) && $value !== ''));
 
         /** @var array<int, string> $allowedAudiences */
         $allowedAudiences = config('services.google_mcp.oauth_allowed_audiences', []);
 
-        if (! is_string($audience) || ! in_array($audience, $allowedAudiences, true)) {
+        $hasAllowedAudience = false;
+
+        foreach ($audienceCandidates as $audienceCandidate) {
+            if (in_array($audienceCandidate, $allowedAudiences, true)) {
+                $hasAllowedAudience = true;
+
+                break;
+            }
+        }
+
+        if (! $hasAllowedAudience) {
             return response()->json([
                 'error' => 'unauthorized',
                 'message' => 'OAuth token audience is not allowed.',
