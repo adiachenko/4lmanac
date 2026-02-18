@@ -60,7 +60,7 @@
             "pint --parallel",
             "npm run format"
         ],
-        "analyse": "phpstan",
+        "analyse": "phpstan --memory-limit=-1",
         "refactor": "rector",
         "coverage": "pest --coverage",
         "coverage:herd": "herd coverage ./vendor/bin/pest --coverage",
