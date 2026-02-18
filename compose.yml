@@ -16,3 +16,8 @@ services:
       - ./storage/frankenstack/certs:/certs:ro
       - ./storage/frankenstack/caddy/data:/data
       - ./storage/frankenstack/caddy/config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 1
