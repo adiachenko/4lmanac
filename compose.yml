@@ -1,6 +1,7 @@
 services:
   app:
     image: ghcr.io/adiachenko/frankenstack:8.5
+    restart: unless-stopped
     environment:
       PHP_ENV: production
       SERVER_NAME: 4lmanac.adiachenko.com
