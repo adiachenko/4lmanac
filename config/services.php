@@ -42,7 +42,7 @@ return [
         'oauth_client_secret' => env('GOOGLE_OAUTH_CLIENT_SECRET'),
         'oauth_redirect_uri' => env('GOOGLE_OAUTH_REDIRECT_URI'),
 
-        'oauth_allowed_audiences' => array_values(array_filter(array_map('trim', explode(',', (string) env('GOOGLE_OAUTH_ALLOWED_AUDIENCES', ''))))),
+        'oauth_allowed_audiences' => array_values(array_filter(array_map(trim(...), explode(',', (string) env('GOOGLE_OAUTH_ALLOWED_AUDIENCES', ''))))),
         'calendar_default_id' => env('GOOGLE_CALENDAR_DEFAULT_ID', 'primary'),
         'external_test_calendar_id' => env('GOOGLE_EXTERNAL_TEST_CALENDAR_ID'),
 

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\OAuth;
 
 use App\Services\GoogleCalendar\GoogleTokenStore;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -15,7 +16,7 @@ class HandleGoogleBootstrapCallbackController
         protected GoogleTokenStore $tokenStore,
     ) {}
 
-    public function __invoke(Request $request): \Illuminate\Http\Response
+    public function __invoke(Request $request): Response
     {
         $callback = $this->readCallbackParameters($request);
 

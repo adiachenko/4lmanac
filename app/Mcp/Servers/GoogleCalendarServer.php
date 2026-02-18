@@ -11,6 +11,7 @@ use App\Mcp\Tools\ListEventsTool;
 use App\Mcp\Tools\SearchEventsTool;
 use App\Mcp\Tools\UpdateEventTool;
 use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Tool;
 
 class GoogleCalendarServer extends Server
 {
@@ -27,7 +28,7 @@ class GoogleCalendarServer extends Server
     MARKDOWN;
 
     /**
-     * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
+     * @var array<int, class-string<Tool>>
      */
     protected array $tools = [
         ListEventsTool::class,

@@ -38,6 +38,7 @@ test('returns unprocessable response when callback state does not match expected
 
     $response->assertStatus(422);
     $response->assertSeeText('Invalid OAuth state. Start bootstrap again.');
+
     expect(File::exists(googleBootstrapStateFilePath()))->toBeTrue();
 });
 

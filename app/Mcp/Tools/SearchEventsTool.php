@@ -8,10 +8,12 @@ use App\Mcp\Tools\Concerns\InteractsWithGoogleCalendarErrors;
 use App\Services\GoogleCalendar\GoogleCalendarException;
 use App\Services\GoogleCalendar\GoogleCalendarService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Override;
 
 class SearchEventsTool extends Tool
 {
@@ -58,8 +60,9 @@ class SearchEventsTool extends Tool
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
+    #[Override]
     public function schema(JsonSchema $schema): array
     {
         return [

@@ -9,10 +9,12 @@ use App\Services\GoogleCalendar\GoogleCalendarException;
 use App\Services\GoogleCalendar\GoogleCalendarService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Override;
 
 class FindAvailabilityTool extends Tool
 {
@@ -188,8 +190,11 @@ class FindAvailabilityTool extends Tool
 
             $start = $item['start'] ?? null;
             $end = $item['end'] ?? null;
+            if (! is_string($start)) {
+                continue;
+            }
 
-            if (! is_string($start) || ! is_string($end)) {
+            if (! is_string($end)) {
                 continue;
             }
 
@@ -249,8 +254,9 @@ class FindAvailabilityTool extends Tool
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
+    #[Override]
     public function schema(JsonSchema $schema): array
     {
         return [

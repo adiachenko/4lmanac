@@ -24,12 +24,10 @@ class GoogleTokenStore
      */
     public function read(): array
     {
-        return $this->withLock(function (array $data): array {
-            return [
-                'data' => $data,
-                'result' => $data,
-            ];
-        });
+        return $this->withLock(fn (array $data): array => [
+            'data' => $data,
+            'result' => $data,
+        ]);
     }
 
     /**
@@ -37,12 +35,10 @@ class GoogleTokenStore
      */
     public function write(array $tokenPayload): void
     {
-        $this->withLock(function () use ($tokenPayload): array {
-            return [
-                'data' => $tokenPayload,
-                'result' => null,
-            ];
-        });
+        $this->withLock(fn (): array => [
+            'data' => $tokenPayload,
+            'result' => null,
+        ]);
     }
 
     /**
@@ -126,9 +122,7 @@ class GoogleTokenStore
 
         $handle = fopen($this->filePath, 'c+');
 
-        if (! is_resource($handle)) {
-            throw new GoogleCalendarException('UPSTREAM_ERROR', 500, 'Unable to open Google token storage file.');
-        }
+        throw_unless(is_resource($handle), GoogleCalendarException::class, 'UPSTREAM_ERROR', 500, 'Unable to open Google token storage file.');
 
         try {
             flock($handle, LOCK_EX);

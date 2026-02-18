@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Rector\CodingStyle\Rector\Catch_\CatchExceptionNameMatchingTypeRector;
 use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\Config\RectorConfig;
 use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
@@ -26,9 +27,11 @@ return RectorConfig::configure()
         'var_dump',
         'ray',
     ])
+    ->withImportNames(removeUnusedImports: true)
     ->withSkip([
         ReadOnlyPropertyRector::class,
         EncapsedStringsToSprintfRector::class,
+        CatchExceptionNameMatchingTypeRector::class,
     ])
     ->withSetProviders(LaravelSetProvider::class)
     ->withSets([
@@ -51,4 +54,4 @@ return RectorConfig::configure()
         SetList::EARLY_RETURN,
         SetList::INSTANCEOF,
     ])
-    ->withPhpSets(php84: true);
+    ->withPhpSets(php85: true);

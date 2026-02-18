@@ -8,7 +8,7 @@ use App\Mcp\Tools\UpdateEventTool;
 use Laravel\Mcp\Server\Transport\FakeTransporter;
 
 test('registers all expected google calendar tools', function (): void {
-    $server = app(GoogleCalendarServer::class, ['transport' => new FakeTransporter]);
+    $server = resolve(GoogleCalendarServer::class, ['transport' => new FakeTransporter]);
 
     $toolNames = $server
         ->createContext()
@@ -27,7 +27,7 @@ test('registers all expected google calendar tools', function (): void {
 });
 
 test('publishes timezone instructions that prevent implicit utc assumptions', function (): void {
-    $server = app(GoogleCalendarServer::class, ['transport' => new FakeTransporter]);
+    $server = resolve(GoogleCalendarServer::class, ['transport' => new FakeTransporter]);
     $context = $server->createContext();
     $toolsByName = $context->tools()->keyBy(static fn ($tool): string => $tool->name());
 

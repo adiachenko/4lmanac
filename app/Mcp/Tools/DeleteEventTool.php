@@ -9,10 +9,12 @@ use App\Services\GoogleCalendar\GoogleCalendarException;
 use App\Services\GoogleCalendar\GoogleCalendarService;
 use App\Services\GoogleCalendar\IdempotencyStore;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Override;
 
 class DeleteEventTool extends Tool
 {
@@ -87,8 +89,9 @@ class DeleteEventTool extends Tool
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
+    #[Override]
     public function schema(JsonSchema $schema): array
     {
         return [

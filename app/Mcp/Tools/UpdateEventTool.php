@@ -11,10 +11,12 @@ use App\Services\GoogleCalendar\GoogleCalendarService;
 use App\Services\GoogleCalendar\IdempotencyStore;
 use Closure;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Override;
 
 class UpdateEventTool extends Tool
 {
@@ -119,14 +121,13 @@ class UpdateEventTool extends Tool
         array $validated,
         string $idempotencyKey,
     ): array {
-        return $idempotencyStore->run('update_event', $idempotencyKey, $validated, function () use ($service, $validated): array {
-            return $service->updateEvent($validated);
-        });
+        return $idempotencyStore->run('update_event', $idempotencyKey, $validated, fn (): array => $service->updateEvent($validated));
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
+    #[Override]
     public function schema(JsonSchema $schema): array
     {
         return [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\GoogleCalendar;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class GoogleCalendarClient
@@ -68,9 +69,7 @@ class GoogleCalendarClient
         $payload = $this->tokenRefresher->refreshAccessToken();
         $refreshedToken = $payload['access_token'] ?? null;
 
-        if (! is_string($refreshedToken) || $refreshedToken === '') {
-            throw new GoogleCalendarException('GOOGLE_REAUTH_REQUIRED', 401, 'Google access token could not be refreshed.');
-        }
+        throw_if(! is_string($refreshedToken) || $refreshedToken === '', GoogleCalendarException::class, 'GOOGLE_REAUTH_REQUIRED', 401, 'Google access token could not be refreshed.');
 
         return $refreshedToken;
     }
@@ -87,7 +86,7 @@ class GoogleCalendarClient
         array $query,
         array $json,
         array $headers,
-    ): \Illuminate\Http\Client\Response {
+    ): Response {
         $request = Http::baseUrl($this->baseUrl)
             ->acceptJson()
             ->withToken($token)

@@ -20,7 +20,7 @@ beforeEach(function (): void {
 });
 
 test('lists events using google api', function (): void {
-    $service = app(GoogleCalendarService::class);
+    $service = resolve(GoogleCalendarService::class);
 
     $response = $service->listEvents([
         'calendar_id' => config('services.google_mcp.external_test_calendar_id'),
@@ -34,20 +34,20 @@ test('lists events using google api', function (): void {
 });
 
 test('refreshes google oauth access token', function (): void {
-    $tokenStore = app(GoogleTokenStore::class);
+    $tokenStore = resolve(GoogleTokenStore::class);
     $refreshToken = $tokenStore->refreshToken();
 
     if (! is_string($refreshToken) || $refreshToken === '') {
         $this->markTestSkipped('No refresh token found in bootstrap token file.');
     }
 
-    $refreshed = app(GoogleTokenRefresher::class)->refreshAccessToken();
+    $refreshed = resolve(GoogleTokenRefresher::class)->refreshAccessToken();
 
     expect($refreshed)->toHaveKey('access_token');
 });
 
 test('searches events using google api', function (): void {
-    $service = app(GoogleCalendarService::class);
+    $service = resolve(GoogleCalendarService::class);
 
     $response = $service->searchEvents([
         'calendar_id' => config('services.google_mcp.external_test_calendar_id'),
@@ -61,7 +61,7 @@ test('searches events using google api', function (): void {
 });
 
 test('creates updates and deletes event using google api', function (): void {
-    $service = app(GoogleCalendarService::class);
+    $service = resolve(GoogleCalendarService::class);
 
     $calendarId = (string) config('services.google_mcp.external_test_calendar_id');
     $suffix = Str::lower(Str::random(8));
@@ -102,7 +102,7 @@ test('creates updates and deletes event using google api', function (): void {
 });
 
 test('queries freebusy using google api', function (): void {
-    $service = app(GoogleCalendarService::class);
+    $service = resolve(GoogleCalendarService::class);
 
     $response = $service->freeBusy([
         'time_min' => '2030-08-01T00:00:00+00:00',
@@ -115,7 +115,7 @@ test('queries freebusy using google api', function (): void {
 });
 
 test('creates updates and deletes all day event using google api', function (): void {
-    $service = app(GoogleCalendarService::class);
+    $service = resolve(GoogleCalendarService::class);
 
     $calendarId = (string) config('services.google_mcp.external_test_calendar_id');
     $suffix = Str::lower(Str::random(8));

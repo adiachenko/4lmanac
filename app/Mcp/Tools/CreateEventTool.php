@@ -11,11 +11,13 @@ use App\Services\GoogleCalendar\GoogleCalendarService;
 use App\Services\GoogleCalendar\IdempotencyStore;
 use Closure;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Override;
 
 class CreateEventTool extends Tool
 {
@@ -133,9 +135,7 @@ class CreateEventTool extends Tool
                     'google_event_id' => $googleEventId,
                 ]);
             } catch (GoogleCalendarException $exception) {
-                if ($exception->errorCode !== 'CONFLICT') {
-                    throw $exception;
-                }
+                throw_if($exception->errorCode !== 'CONFLICT', $exception);
 
                 return $service->getEvent([
                     'calendar_id' => $validated['calendar_id'] ?? null,
@@ -153,8 +153,9 @@ class CreateEventTool extends Tool
     }
 
     /**
-     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     * @return array<string, Type>
      */
+    #[Override]
     public function schema(JsonSchema $schema): array
     {
         return [

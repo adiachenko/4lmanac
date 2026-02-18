@@ -50,7 +50,7 @@ class TokenStatusCommand extends Command
             ['has_access_token', is_string($payload['access_token'] ?? null) ? 'yes' : 'no'],
             ['has_refresh_token', is_string($payload['refresh_token'] ?? null) ? 'yes' : 'no'],
             ['expires_at', $expiresAt?->toIso8601String() ?? 'n/a'],
-            ['expired', $expiresAt !== null && $expiresAt->isPast() ? 'yes' : 'no'],
+            ['expired', $expiresAt instanceof CarbonImmutable && $expiresAt->isPast() ? 'yes' : 'no'],
             ['scope', $this->scope($payload)],
         ];
     }

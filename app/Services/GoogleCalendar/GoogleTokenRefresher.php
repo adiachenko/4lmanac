@@ -20,13 +20,7 @@ class GoogleTokenRefresher
     {
         $refreshToken = $this->tokenStore->refreshToken();
 
-        if (! is_string($refreshToken) || $refreshToken === '') {
-            throw new GoogleCalendarException(
-                errorCode: 'GOOGLE_REAUTH_REQUIRED',
-                statusCode: 401,
-                message: 'Google refresh token is missing. Run the bootstrap flow again.',
-            );
-        }
+        throw_if(! is_string($refreshToken) || $refreshToken === '', GoogleCalendarException::class, errorCode: 'GOOGLE_REAUTH_REQUIRED', statusCode: 401, message: 'Google refresh token is missing. Run the bootstrap flow again.');
 
         $tokenEndpoint = config('services.google_mcp.oauth_token_endpoint');
         $tokenEndpoint = is_string($tokenEndpoint) ? $tokenEndpoint : 'https://oauth2.googleapis.com/token';

@@ -109,9 +109,7 @@ class IdempotencyStore
 
         $handle = fopen($this->filePath, 'c+');
 
-        if (! is_resource($handle)) {
-            throw new GoogleCalendarException('UPSTREAM_ERROR', 500, 'Unable to open idempotency storage file.');
-        }
+        throw_unless(is_resource($handle), GoogleCalendarException::class, 'UPSTREAM_ERROR', 500, 'Unable to open idempotency storage file.');
 
         try {
             flock($handle, LOCK_EX);
@@ -177,7 +175,11 @@ class IdempotencyStore
         $normalized = [];
 
         foreach ($entries as $key => $entry) {
-            if (! is_string($key) || ! is_array($entry)) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            if (! is_array($entry)) {
                 continue;
             }
 
