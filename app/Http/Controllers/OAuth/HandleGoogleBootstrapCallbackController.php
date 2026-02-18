@@ -113,6 +113,10 @@ class HandleGoogleBootstrapCallbackController
 
     protected function stateFilePath(): string
     {
-        return storage_path('app/mcp/google-bootstrap-state.json');
+        $configuredPath = config('services.google_mcp.bootstrap_state_file', storage_path('app/mcp/google-bootstrap-state.json'));
+
+        return is_string($configuredPath) && trim($configuredPath) !== ''
+            ? $configuredPath
+            : storage_path('app/mcp/google-bootstrap-state.json');
     }
 }

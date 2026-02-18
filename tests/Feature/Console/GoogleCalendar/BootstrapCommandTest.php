@@ -5,8 +5,12 @@ declare(strict_types=1);
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Tests\Concerns\InteractsWithGoogleMcpStorage;
+
+uses(InteractsWithGoogleMcpStorage::class);
 
 beforeEach(function (): void {
+    $this->configureGoogleMcpStoragePaths();
     File::ensureDirectoryExists(dirname(googleBootstrapStateFilePathForCommand()));
     File::delete(googleBootstrapStateFilePathForCommand());
 
@@ -59,5 +63,9 @@ test('stores bootstrap state and prints authorization url', function (): void {
 
 function googleBootstrapStateFilePathForCommand(): string
 {
-    return storage_path('app/mcp/google-bootstrap-state.json');
+    $configuredPath = config('services.google_mcp.bootstrap_state_file', storage_path('app/mcp/google-bootstrap-state.json'));
+
+    return is_string($configuredPath) && trim($configuredPath) !== ''
+        ? $configuredPath
+        : storage_path('app/mcp/google-bootstrap-state.json');
 }

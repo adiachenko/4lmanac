@@ -85,7 +85,11 @@ test('stores merged token payload and clears bootstrap state after successful ca
 
 function googleBootstrapStateFilePath(): string
 {
-    return storage_path('app/mcp/google-bootstrap-state.json');
+    $configuredPath = config('services.google_mcp.bootstrap_state_file', storage_path('app/mcp/google-bootstrap-state.json'));
+
+    return is_string($configuredPath) && trim($configuredPath) !== ''
+        ? $configuredPath
+        : storage_path('app/mcp/google-bootstrap-state.json');
 }
 
 function writeGoogleBootstrapState(string $state): void

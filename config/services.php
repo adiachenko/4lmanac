@@ -59,6 +59,7 @@ return [
 
         'token_file' => storage_path('app/mcp/google-calendar-tokens.json'),
         'idempotency_file' => storage_path('app/mcp/idempotency.json'),
+        'bootstrap_state_file' => storage_path('app/mcp/google-bootstrap-state.json'),
     ],
 
 ];

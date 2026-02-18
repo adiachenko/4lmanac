@@ -6,23 +6,28 @@ namespace Tests\Concerns;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\ParallelTesting;
 use JsonException;
 
 trait InteractsWithGoogleMcpStorage
 {
     protected function configureGoogleMcpStoragePaths(): void
     {
-        $baseDirectory = storage_path('framework/testing/google-mcp');
+        $parallelToken = ParallelTesting::token();
+        $storageToken = is_string($parallelToken) ? $parallelToken : 'single';
+        $baseDirectory = storage_path("framework/testing/google-mcp/{$storageToken}");
 
         File::ensureDirectoryExists($baseDirectory);
 
         $tokenFile = "{$baseDirectory}/google-calendar-tokens.json";
         $idempotencyFile = "{$baseDirectory}/idempotency.json";
+        $bootstrapStateFile = "{$baseDirectory}/google-bootstrap-state.json";
 
         config()->set('services.google_mcp.token_file', $tokenFile);
         config()->set('services.google_mcp.idempotency_file', $idempotencyFile);
+        config()->set('services.google_mcp.bootstrap_state_file', $bootstrapStateFile);
 
-        File::delete([$tokenFile, $idempotencyFile]);
+        File::delete([$tokenFile, $idempotencyFile, $bootstrapStateFile]);
     }
 
     /**
