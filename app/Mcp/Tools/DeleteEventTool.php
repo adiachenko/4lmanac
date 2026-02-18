@@ -26,27 +26,20 @@ class DeleteEventTool extends Tool
 
     public function handle(Request $request, GoogleCalendarService $service, IdempotencyStore $idempotencyStore): ResponseFactory
     {
-        $validated = $request->validate([
-            'calendar_id' => ['nullable', 'string'],
-            'event_id' => ['required', 'string'],
-            'if_match_etag' => ['nullable', 'string'],
-            'send_updates' => ['nullable', 'in:all,externalOnly,none'],
-            'idempotency_key' => ['required', 'string', 'max:120'],
-        ]);
+        $validated = $this->validateInput($request);
         /** @var string $idempotencyKey */
         $idempotencyKey = $validated['idempotency_key'];
         /** @var string $eventId */
         $eventId = $validated['event_id'];
 
         try {
-            $result = $idempotencyStore->run('delete_event', $idempotencyKey, $validated, function () use ($service, $validated, $eventId): array {
-                $service->deleteEvent($validated);
-
-                return [
-                    'deleted' => true,
-                    'event_id' => $eventId,
-                ];
-            });
+            $result = $this->deleteIdempotentEvent(
+                service: $service,
+                idempotencyStore: $idempotencyStore,
+                validated: $validated,
+                idempotencyKey: $idempotencyKey,
+                eventId: $eventId,
+            );
         } catch (GoogleCalendarException $exception) {
             return $this->errorResponse($exception);
         }
@@ -56,6 +49,41 @@ class DeleteEventTool extends Tool
             'event_id' => is_string($result['response']['event_id'] ?? null) ? $result['response']['event_id'] : $eventId,
             'idempotent_replay' => $result['replayed'],
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function validateInput(Request $request): array
+    {
+        return $request->validate([
+            'calendar_id' => ['nullable', 'string'],
+            'event_id' => ['required', 'string'],
+            'if_match_etag' => ['nullable', 'string'],
+            'send_updates' => ['nullable', 'in:all,externalOnly,none'],
+            'idempotency_key' => ['required', 'string', 'max:120'],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array{response: array<string, mixed>, replayed: bool}
+     */
+    protected function deleteIdempotentEvent(
+        GoogleCalendarService $service,
+        IdempotencyStore $idempotencyStore,
+        array $validated,
+        string $idempotencyKey,
+        string $eventId,
+    ): array {
+        return $idempotencyStore->run('delete_event', $idempotencyKey, $validated, function () use ($service, $validated, $eventId): array {
+            $service->deleteEvent($validated);
+
+            return [
+                'deleted' => true,
+                'event_id' => $eventId,
+            ];
+        });
     }
 
     /**

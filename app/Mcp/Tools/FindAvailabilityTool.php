@@ -27,7 +27,30 @@ class FindAvailabilityTool extends Tool
 
     public function handle(Request $request, GoogleCalendarService $service): ResponseFactory
     {
-        $validated = $request->validate([
+        $validated = $this->validateInput($request);
+
+        try {
+            $freeBusy = $service->freeBusy($validated);
+        } catch (GoogleCalendarException $exception) {
+            return $this->errorResponse($exception);
+        }
+
+        $busyCalendarData = $this->aggregateBusyCalendars($freeBusy);
+        $slots = $this->buildSuggestedSlots($validated, $busyCalendarData['busy_ranges']);
+
+        return Response::structured([
+            'busy_by_calendar' => $busyCalendarData['busy_by_calendar'],
+            'suggested_slots' => $slots,
+            'timezone' => $validated['timezone'],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function validateInput(Request $request): array
+    {
+        return $request->validate([
             'calendar_id' => ['nullable', 'string'],
             'calendar_ids' => ['nullable', 'array'],
             'calendar_ids.*' => ['required', 'string'],
@@ -38,37 +61,54 @@ class FindAvailabilityTool extends Tool
             'slot_step_minutes' => ['nullable', 'integer', 'min:5', 'max:240'],
             'max_slots' => ['nullable', 'integer', 'min:1', 'max:200'],
         ]);
+    }
 
-        try {
-            $freeBusy = $service->freeBusy($validated);
-        } catch (GoogleCalendarException $exception) {
-            return $this->errorResponse($exception);
-        }
-
-        /** @var array<string, array<string, mixed>> $calendarPayload */
+    /**
+     * @param  array<string, mixed>  $freeBusy
+     * @return array{
+     *     busy_by_calendar: array<string, array<int, array{start: string, end: string}>>,
+     *     busy_ranges: array<int, array{start: string, end: string}>
+     * }
+     */
+    protected function aggregateBusyCalendars(array $freeBusy): array
+    {
+        /** @var array<string, mixed> $calendarPayload */
         $calendarPayload = is_array($freeBusy['calendars'] ?? null)
             ? $freeBusy['calendars']
             : [];
 
         /** @var array<string, array<int, array{start: string, end: string}>> $busyByCalendar */
-        $busyByCalendar = [];
+        $busyByCalendar = collect($calendarPayload)
+            ->mapWithKeys(function (mixed $calendarInfo, string $calendarId): array {
+                $busyPayload = is_array($calendarInfo) ? $calendarInfo['busy'] ?? [] : [];
+
+                return [$calendarId => $this->normalizeBusyRanges($busyPayload)];
+            })
+            ->all();
+
         /** @var array<int, array{start: string, end: string}> $busyRanges */
-        $busyRanges = [];
+        $busyRanges = collect($busyByCalendar)->flatten(1)->values()->all();
 
-        foreach ($calendarPayload as $calendarId => $calendarInfo) {
-            $busy = $this->normalizeBusyRanges($calendarInfo['busy'] ?? []);
+        return [
+            'busy_by_calendar' => $busyByCalendar,
+            'busy_ranges' => $busyRanges,
+        ];
+    }
 
-            $busyByCalendar[$calendarId] = $busy;
-            $busyRanges = array_merge($busyRanges, $busy);
-        }
-
+    /**
+     * @param  array<string, mixed>  $validated
+     * @param  array<int, array{start: string, end: string}>  $busyRanges
+     * @return array<int, array{start: string, end: string}>
+     */
+    protected function buildSuggestedSlots(array $validated, array $busyRanges): array
+    {
         $timeMin = $this->requiredString($validated, 'time_min');
         $timeMax = $this->requiredString($validated, 'time_max');
         $slotDurationMinutes = $this->requiredInt($validated, 'slot_duration_minutes');
         $slotStepMinutes = $this->optionalInt($validated, 'slot_step_minutes', $slotDurationMinutes);
         $maxSlots = $this->optionalInt($validated, 'max_slots', 50);
 
-        $slots = $this->suggestedSlots(
+        return $this->suggestedSlots(
             timeMin: CarbonImmutable::parse($timeMin),
             timeMax: CarbonImmutable::parse($timeMax),
             busyRanges: $busyRanges,
@@ -76,12 +116,6 @@ class FindAvailabilityTool extends Tool
             stepMinutes: $slotStepMinutes,
             maxSlots: $maxSlots,
         );
-
-        return Response::structured([
-            'busy_by_calendar' => $busyByCalendar,
-            'suggested_slots' => $slots,
-            'timezone' => $validated['timezone'],
-        ]);
     }
 
     /**

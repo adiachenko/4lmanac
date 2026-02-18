@@ -10,12 +10,17 @@ class ShowOAuthProtectedResourceMetadataController
 {
     public function __invoke(?string $path = ''): JsonResponse
     {
-        $normalizedPath = is_string($path) ? $path : '';
-
         return response()->json([
-            'resource' => url("/{$normalizedPath}"),
+            'resource' => $this->resourceUrl($path),
             'authorization_servers' => ['https://accounts.google.com'],
             'scopes_supported' => config('services.google_mcp.mcp_required_scopes', []),
         ]);
+    }
+
+    protected function resourceUrl(?string $path): string
+    {
+        $normalizedPath = is_string($path) ? $path : '';
+
+        return url("/{$normalizedPath}");
     }
 }

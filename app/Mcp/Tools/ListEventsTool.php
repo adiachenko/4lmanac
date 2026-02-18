@@ -26,15 +26,7 @@ class ListEventsTool extends Tool
 
     public function handle(Request $request, GoogleCalendarService $service): ResponseFactory
     {
-        $validated = $request->validate([
-            'calendar_id' => ['nullable', 'string'],
-            'time_min' => ['required', 'date_format:Y-m-d\TH:i:sP'],
-            'time_max' => ['required', 'date_format:Y-m-d\TH:i:sP', 'after:time_min'],
-            'timezone' => ['required', 'timezone'],
-            'max_results' => ['nullable', 'integer', 'min:1', 'max:2500'],
-            'page_token' => ['nullable', 'string'],
-            'include_deleted' => ['nullable', 'boolean'],
-        ]);
+        $validated = $this->validateInput($request);
 
         try {
             $result = $service->listEvents($validated);
@@ -46,6 +38,22 @@ class ListEventsTool extends Tool
             'events' => $result['items'] ?? [],
             'next_page_token' => $result['nextPageToken'] ?? null,
             'timezone' => $validated['timezone'],
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function validateInput(Request $request): array
+    {
+        return $request->validate([
+            'calendar_id' => ['nullable', 'string'],
+            'time_min' => ['required', 'date_format:Y-m-d\TH:i:sP'],
+            'time_max' => ['required', 'date_format:Y-m-d\TH:i:sP', 'after:time_min'],
+            'timezone' => ['required', 'timezone'],
+            'max_results' => ['nullable', 'integer', 'min:1', 'max:2500'],
+            'page_token' => ['nullable', 'string'],
+            'include_deleted' => ['nullable', 'boolean'],
         ]);
     }
 

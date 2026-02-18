@@ -128,3 +128,23 @@ test('creates an all day event', function (): void {
         'idempotent_replay' => false,
     ]);
 });
+
+test('rejects mixed timed and all day fields for create event', function (): void {
+    $response = GoogleCalendarServer::tool(CreateEventTool::class, [
+        'summary' => 'Mixed mode',
+        'start_at' => '2030-03-01T11:00:00+00:00',
+        'end_at' => '2030-03-01T12:00:00+00:00',
+        'timezone' => 'UTC',
+        'start_date' => '2030-03-01',
+        'end_date' => '2030-03-02',
+        'idempotency_key' => 'idem-create-mixed-mode',
+    ]);
+
+    $response->assertHasErrors([
+        'start at field prohibits',
+        'end at field prohibits',
+        'timezone field prohibits',
+        'start date field prohibits',
+        'end date field prohibits',
+    ]);
+});

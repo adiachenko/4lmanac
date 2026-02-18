@@ -30,22 +30,48 @@ class TokenStatusCommand extends Command
             return self::SUCCESS;
         }
 
-        $expiresAt = is_string($payload['expires_at'] ?? null)
-            ? CarbonImmutable::parse($payload['expires_at'])
-            : null;
-        $tokenFile = config('services.google_mcp.token_file');
-        $tokenFile = is_string($tokenFile) ? $tokenFile : 'n/a';
-        $scope = is_string($payload['scope'] ?? null) ? $payload['scope'] : 'n/a';
+        $this->table(['Field', 'Value'], $this->tableRows($payload));
 
-        $this->table(['Field', 'Value'], [
+        return self::SUCCESS;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int, array{string, string}>
+     */
+    protected function tableRows(array $payload): array
+    {
+        $expiresAt = $this->expiresAt($payload);
+        $tokenFileConfig = config('services.google_mcp.token_file', 'n/a');
+        $tokenFile = is_string($tokenFileConfig) ? $tokenFileConfig : 'n/a';
+
+        return [
             ['token_file', $tokenFile],
             ['has_access_token', is_string($payload['access_token'] ?? null) ? 'yes' : 'no'],
             ['has_refresh_token', is_string($payload['refresh_token'] ?? null) ? 'yes' : 'no'],
             ['expires_at', $expiresAt?->toIso8601String() ?? 'n/a'],
             ['expired', $expiresAt !== null && $expiresAt->isPast() ? 'yes' : 'no'],
-            ['scope', $scope],
-        ]);
+            ['scope', $this->scope($payload)],
+        ];
+    }
 
-        return self::SUCCESS;
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function expiresAt(array $payload): ?CarbonImmutable
+    {
+        if (! is_string($payload['expires_at'] ?? null)) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($payload['expires_at']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function scope(array $payload): string
+    {
+        return is_string($payload['scope'] ?? null) ? $payload['scope'] : 'n/a';
     }
 }

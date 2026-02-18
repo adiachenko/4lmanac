@@ -152,6 +152,13 @@ External integration tests (real Google API):
 php artisan test --compact --testsuite=External
 ```
 
+### MCP Event Payload Contract
+
+- Timed mode requires `start_at`, `end_at`, and `timezone`.
+- Timed datetimes must be RFC3339 with explicit offsets.
+- All-day mode requires `start_date` and `end_date` (Google-exclusive `end_date`).
+- Do not mix timed fields and all-day fields in the same request.
+
 ### Common Errors
 
 - `redirect_uri_mismatch`: OAuth client redirect URI does not exactly match `GOOGLE_OAUTH_REDIRECT_URI`.

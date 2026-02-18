@@ -103,3 +103,23 @@ test('updates an all day event', function (): void {
         'idempotent_replay' => false,
     ]);
 });
+
+test('rejects mixed timed and all day fields for update event', function (): void {
+    $response = GoogleCalendarServer::tool(UpdateEventTool::class, [
+        'event_id' => 'evt-update-mixed-1',
+        'start_at' => '2030-04-01T11:00:00+00:00',
+        'end_at' => '2030-04-01T12:00:00+00:00',
+        'timezone' => 'UTC',
+        'start_date' => '2030-04-01',
+        'end_date' => '2030-04-02',
+        'idempotency_key' => 'idem-update-mixed-mode',
+    ]);
+
+    $response->assertHasErrors([
+        'start at field prohibits',
+        'end at field prohibits',
+        'timezone field prohibits',
+        'start date field prohibits',
+        'end date field prohibits',
+    ]);
+});
