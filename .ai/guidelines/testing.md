@@ -8,7 +8,7 @@ Start implementation with a test. Write a failing test that describes the desire
 
 Choose the test suite by intent:
 
-- `tests/Feature`: default starting point for validating application behavior through HTTP endpoints (`Web`/`Api`), console commands (`Console`), or message handlers.
+- `tests/Feature`: default starting point for validating application behavior. Organize feature tests in subfolders by interface type, such as `Web`, `Api`, or `Mcp` for HTTP endpoints, `Console` for Artisan commands, and `Message` for message handlers (if using a message broker).
 - `tests/Unit`: focused tests for individual classes aligned with `app/` namespaces; strict isolation is not required.
 - `tests/External`: third-party integration tests, organized by provider or domain (favor existing project conventions).
 

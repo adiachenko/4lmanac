@@ -6,4 +6,4 @@
 - For form request validation, always specify multiple rules for a field using array syntax rather than the `|`-delimited string notation.
 - Models are unguarded by default. Pass only validated data or an explicit allowlist of fields to `create()`, `update()`, or `fill()`—never raw or unvalidated request input.
 - Do not use the `config()` helper within configuration files.
-- Define route handlers with controllers (prefer single-action controllers) and do not use inline route callbacks.
+- Define route handlers with controllers and do not use inline route callbacks.
