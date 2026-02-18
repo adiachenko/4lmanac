@@ -50,3 +50,7 @@ opencode.json
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+
+**/caddy
+frankenphp
+frankenphp-worker.php
