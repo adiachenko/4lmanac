@@ -1,174 +1,101 @@
 # 4lmanac
 
-A Google Calendar MCP server that provides full calendar management — creating, updating, and deleting events — unlike the read-only integrations offered by ChatGPT and Claude.
+Google Calendar MCP server with full calendar management — create, update, and delete events — unlike the official read-only integrations from ChatGPT and Claude.
 
-## Installation
+## Client Compatibility
 
-```bash
-git clone https://github.com/adiachenko/4lmanac.git
+While ChatGPT technically works, as of February 2026 Claude is the recommended choice for custom MCPs. ChatGPT's connector support is far more limited, noticeably slower, and constrained by restrictive security policies — **none of which are issues stemming from this project**.
 
-cd example-app
+## Deployment Requirements
 
-# Initialize the application
-composer install
+- Google Cloud project with the Google Calendar API enabled (no billing required, setup is described below).
+- Valid HTTPS domain.
+- Web server with PHP 8.5+.
+    - If you're familiar with Docker, you can use `compose.yml` supplied in this repository (based on [Frankenstack image](https://github.com/adiachenko/frankenstack)) by tweaking configuration to your needs.
 
-# Optionally, install git hooks for development
-sh install-git-hooks.sh
-```
+## Setup
 
-Installed Git hooks:
+### 1. Google Cloud Prerequisites
 
-- `pre-commit` runs `composer format`
-- `pre-push` runs `composer analyse`
-
-If you use [Fork](https://git-fork.com/) and hooks misbehave, see [this issue](https://github.com/fork-dev/Tracker/issues/996).
-
-## Development Commands
-
-| Command                  | Purpose                                               |
-| ------------------------ | ----------------------------------------------------- |
-| `composer test`          | Run the test suite (`pest --compact --parallel`).     |
-| `composer test:external` | Run the external test suite (`--testsuite=External`). |
-| `composer format`        | Run Laravel Pint and Prettier formatting.             |
-| `composer analyse`       | Run static analysis (`phpstan`).                      |
-| `composer refactor`      | Apply Rector refactors.                               |
-| `composer coverage`      | Run tests with local coverage (`pest --coverage`).    |
-| `composer coverage:herd` | Run coverage via Laravel Herd tooling.                |
-
-## Tests Structure and Conventions
-
-The tests are organized into three test suites:
-
-- `tests/Unit`: Tests individual classes that align with the `app/` namespace structure. These tests focus on a specific class, but do not require strict isolation. Using database or involving related classes is acceptable.
-- `tests/Feature`: Validates broader application behavior through HTTP endpoints (`Web`/`Api`/`Mcp`, etc.), console commands (`Console`), or message handlers (`Message` if applicable). Feature tests should reflect your application's APIs.
-- `tests/External`: Tests interactions with external (third-party) services, organized by provider or domain.
-
-In most cases, start with `Feature` tests. Use `Unit` tests when you need to validate complex underlying logic in individual classes. Reserve `External` tests for checks on third-party services that cannot or should not be mocked.
-
-Running `composer test` executes only the `Unit` and `Feature` suites. To run the external tests, use `composer test:external`.
-
-Test descriptions should follow the pattern: `<verb> <observable outcome> [when <condition>] [for <actor>]`.
-
-## Additional Folders
-
-Not strictly Laravel-official, but enforced in the starter kit as common practices in the Laravel community:
-
-- `app/Actions`: invokable classes for encapsulating business logic.
-- `app/Data`: data transfer objects (DTOs) for encapsulating data.
-- `app/Enums`: self-explanatory.
-- `app/Services`: for calling external services.
-
-## PhpStorm Setup
-
-Recommended setup for consistent formatting:
-
-- `Settings | Editor | Code Style`: ensure "Enable EditorConfig support" is checked.
-- `Settings | PHP | Quality Tools | Laravel Pint`: use ruleset from `pint.json`
-- `Settings | PHP | Quality Tools`: set Laravel Pint as external formatter
-- `Settings | Tools | Actions on Save`: enable reformat on save
-- `Settings | Languages & Frameworks | JavaScript | Prettier`: use automatic config, enable "Run on save", and prefer Prettier config. Include `md` in Prettier file extensions.
-
-## VSCode/Cursor Setup
-
-VSCode and Cursor will automatically detect formatting settings defined in the `.vscode/` folder – no additional setup is needed beyond installing the suggested extensions.
-
-## Google Calendar MCP Setup
-
-### Prerequisites
-
-1. Create a Google Cloud project.
-2. Enable Google Calendar API in that project.
-3. Configure OAuth consent screen (Google Auth Platform):
-    - Audience: `External` (or `Internal` if your Workspace policy requires it).
-    - Add test users while app is in testing mode.
-    - Add scopes:
+1. Create a Google Cloud project and enable the **Google Calendar API**.
+2. Configure the OAuth consent screen under **Google Auth Platform** (Branding / Audience / Data Access):
+    - **Audience**: set to `External` (`Internal` requires Google Workspace but also works).
+    - Add your Google account as a test user and leave the app in testing mode.
+    - Add your domain (e.g. `your-domain.com`) under Authorized domains.
+    - Add the following scopes:
         - `openid`
         - `https://www.googleapis.com/auth/userinfo.email`
         - `https://www.googleapis.com/auth/userinfo.profile`
         - `https://www.googleapis.com/auth/calendar`
-4. Create OAuth clients:
-    - MCP client auth client(s) for ChatGPT and Claude callback URIs.
-    - Bootstrap client for the shared calendar token flow.
 
-### Environment Configuration
+### 2. Create OAuth Client for Bootstrap
 
-Set these variables in `.env`:
+This client is used for the one-time shared token bootstrap flow.
+
+1. Go to **Google Auth Platform > Clients > Create client**.
+2. Application type: **Web application**.
+3. Name: e.g. `mcp-calendar-bootstrap`.
+4. Authorized redirect URI: `https://your-domain.com/oauth/google/bootstrap/callback`
+5. Save and copy the `client_id` and `client_secret`.
+
+Add these to your `.env`:
 
 ```env
-GOOGLE_OAUTH_CLIENT_ID=
-GOOGLE_OAUTH_CLIENT_SECRET=
-GOOGLE_OAUTH_REDIRECT_URI=http://127.0.0.1:8000/oauth/google/bootstrap/callback
-GOOGLE_OAUTH_ALLOWED_AUDIENCES=
+GOOGLE_OAUTH_CLIENT_ID=your-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=your-client-secret
+GOOGLE_OAUTH_REDIRECT_URI=https://your-domain.com/oauth/google/bootstrap/callback
+```
 
+Optionally, override the calendar used by the integration (defaults to `primary`):
+
+```env
 GOOGLE_CALENDAR_DEFAULT_ID=primary
-
-GOOGLE_EXTERNAL_TEST_CALENDAR_ID=
 ```
 
-Field notes:
+### 3. Create OAuth Client(s) for MCP Clients
 
-- `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` / `GOOGLE_OAUTH_REDIRECT_URI` are for the shared token bootstrap flow.
-- `GOOGLE_OAUTH_ALLOWED_AUDIENCES` must include the OAuth client IDs used by MCP clients (ChatGPT/Claude), comma-separated.
-- Required incoming OAuth scopes are fixed in app config: `openid` and `https://www.googleapis.com/auth/userinfo.email`.
+Create a separate OAuth client for each MCP client (Claude, ChatGPT, or both).
 
-### Shared Token Bootstrap (one-time)
+1. Go to **Google Auth Platform > Clients > Create client**.
+2. Application type: **Web application**.
+3. Set Authorized redirect URIs per client:
 
-1. Run:
+    **Claude** (e.g. `mcp-claude-auth`):
+    - `https://claude.ai/api/mcp/auth_callback`
+    - `https://claude.com/api/mcp/auth_callback`
 
-```bash
-php artisan app:google-calendar:bootstrap
+    **ChatGPT** (e.g. `mcp-chatgpt-auth`):
+    - `https://chatgpt.com/connector_platform_oauth_redirect`
+    - `https://platform.openai.com/apps-manage/oauth`
+
+4. Save and copy each client's `client_id` and `client_secret` — you'll need them when connecting the MCP client.
+
+Whitelist the client IDs in `.env` (comma-separated):
+
+```env
+GOOGLE_OAUTH_ALLOWED_AUDIENCES=your-claude-client-id,your-chatgpt-client-id
 ```
+
+### 4. Bootstrap Shared Token (One-Time)
+
+1. Run the bootstrap command:
+
+    ```bash
+    php artisan app:google-calendar:bootstrap
+    ```
 
 2. Open the printed URL, sign in with the shared Google account, and grant access.
-3. Google redirects to:
-    - `GET /oauth/google/bootstrap/callback`
-4. On success, the app stores token data in:
-    - `storage/app/mcp/google-calendar-tokens.json`
+3. On success, the app stores token data in `storage/app/mcp/google-calendar-tokens.json`.
 
-Check token state:
+Check token status at any time:
 
 ```bash
 php artisan app:google-calendar:token:status
 ```
 
-### External Test Calendar Setup
+## Secret Rotation
 
-1. Create a dedicated calendar used only for integration tests.
-2. Copy its calendar ID into `GOOGLE_EXTERNAL_TEST_CALENDAR_ID`.
-3. Keep real meetings out of that calendar.
-4. Tests create temporary events with `MCP_TMP_` prefix and clean them up.
-
-### Runbook
-
-Local feature tests (mocked Google API):
-
-```bash
-php artisan test --compact --testsuite=Feature
-```
-
-External integration tests (real Google API):
-
-```bash
-php artisan test --compact --testsuite=External
-```
-
-### MCP Event Payload Contract
-
-- Timed mode requires `start_at`, `end_at`, and `timezone`.
-- Timed datetimes must be RFC3339 with explicit offsets.
-- All-day mode requires `start_date` and `end_date` (Google-exclusive `end_date`).
-- Do not mix timed fields and all-day fields in the same request.
-
-### Common Errors
-
-- `redirect_uri_mismatch`: OAuth client redirect URI does not exactly match `GOOGLE_OAUTH_REDIRECT_URI`.
-- `invalid audience`: neither incoming token `aud` nor `azp` is listed in `GOOGLE_OAUTH_ALLOWED_AUDIENCES`.
-- `insufficient_scope`: incoming client token is missing one of the required scopes (`openid`, `https://www.googleapis.com/auth/userinfo.email`).
-- Missing refresh token during bootstrap: ensure auth URL requests `access_type=offline` and `prompt=consent`.
-
-### Secret Rotation and Revocation
-
-1. Rotate OAuth client secrets in Google Cloud.
-2. Update `.env` values.
+1. Rotate the OAuth client secret in Google Cloud Console.
+2. Update the corresponding `.env` values.
 3. Delete `storage/app/mcp/google-calendar-tokens.json`.
-4. Run bootstrap flow again to mint new shared refresh token.
+4. Re-run the bootstrap flow to obtain a new refresh token.
