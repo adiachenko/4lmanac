@@ -4,7 +4,7 @@ Google Calendar MCP server with full calendar management, allowing you to create
 
 ## Client Compatibility 🤝
 
-At the time of writing **Claude is the recommended choice for custom MCPs**. While both use the same API with the same feature set, ChatGPT's connector is situationally limited, notably slower, and constrained by restrictive security policies — **these are ChatGPT's own limitations, not issues with this project**.
+At the time of writing **Claude is the recommended choice for custom MCPs**. While both use the same API with the same feature set, ChatGPT's connector is situationally limited, notably slower, and constrained by restrictive security policies — these are ChatGPT's own limitations, not issues with this project.
 
 ## Deployment Requirements 🚀
 
