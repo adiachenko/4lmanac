@@ -1,19 +1,19 @@
-# 4lmanac
+# 📆 4lmanac
 
 Google Calendar MCP server with full calendar management — create, update, and delete events — unlike the official read-only integrations from ChatGPT and Claude.
 
-## Client Compatibility
+## Client Compatibility 🤝
 
-While ChatGPT technically works, as of February 2026 Claude is the recommended choice for custom MCPs. ChatGPT's connector support is far more limited, noticeably slower, and constrained by restrictive security policies — **none of which are issues stemming from this project**.
+While ChatGPT technically works, as of February 2026 **Claude is the recommended choice for custom MCPs**. ChatGPT's connector support is far more limited, noticeably slower, and constrained by restrictive security policies — **none of which are issues stemming from this project**.
 
-## Deployment Requirements
+## Deployment Requirements 🚀
 
 - Google Cloud project with the Google Calendar API enabled (no billing required, setup is described below).
 - Valid HTTPS domain.
 - Web server with PHP 8.5+.
-    - If you're familiar with Docker, you can use `compose.yml` supplied in this repository (based on [Frankenstack image](https://github.com/adiachenko/frankenstack)) by tweaking configuration to your needs.
+    - If you're familiar with Docker, you can use `compose.yml` supplied in this repository (based on [frankenstack](https://github.com/adiachenko/frankenstack) image) by tweaking configuration to your needs.
 
-## Setup
+## Setup 🛠️
 
 ### 1. Google Cloud Prerequisites
 
@@ -93,7 +93,7 @@ Check token status at any time:
 php artisan app:google-calendar:token:status
 ```
 
-## Secret Rotation
+## Secret Rotation 🔄
 
 1. Rotate the OAuth client secret in Google Cloud Console.
 2. Update the corresponding `.env` values.
