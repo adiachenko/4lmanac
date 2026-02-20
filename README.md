@@ -1,10 +1,10 @@
 # 📆 4lmanac
 
-Google Calendar MCP server with full calendar management — create, update, and delete events — unlike the official read-only integrations from ChatGPT and Claude.
+Google Calendar MCP server with full calendar management, allowing you to create, update, and delete events, going beyond the read-only integrations officially offered by ChatGPT and Claude.
 
 ## Client Compatibility 🤝
 
-While ChatGPT technically works, as of February 2026 **Claude is the recommended choice for custom MCPs**. ChatGPT's connector support is far more limited, noticeably slower, and constrained by restrictive security policies — **none of which are issues stemming from this project**.
+At the time of writing **Claude is the recommended choice for custom MCPs**. While both use the same API with the same feature set, ChatGPT's connector is situationally limited, notably slower, and constrained by restrictive security policies — **these are ChatGPT's own limitations, not issues with this project**.
 
 ## Deployment Requirements 🚀
 
