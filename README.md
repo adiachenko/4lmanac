@@ -2,6 +2,17 @@
 
 Google Calendar MCP server with full calendar management, allowing you to create, update, and delete events, going beyond the read-only integrations officially offered by ChatGPT and Claude.
 
+## Supported MCP Tools 🧰
+
+The Google Calendar MCP server currently exposes these tools:
+
+- `list_events` — list events in a required time window.
+- `search_events` — search events by text query in a required time window.
+- `create_event` — create timed or all-day events.
+- `update_event` — update timed or all-day events.
+- `delete_event` — delete an event.
+- `find_availability` — aggregate busy windows and suggest available slots.
+
 ## Client Compatibility 🤝
 
 At the time of writing **Claude is the recommended choice for custom MCPs**. While both use the same API with the same feature set, ChatGPT's connector is situationally limited, notably slower, and constrained by restrictive security policies — these are ChatGPT's own limitations, not issues with this project.
@@ -28,9 +39,9 @@ At the time of writing **Claude is the recommended choice for custom MCPs**. Whi
         - `https://www.googleapis.com/auth/userinfo.profile`
         - `https://www.googleapis.com/auth/calendar`
 
-### 2. Create OAuth Client for Bootstrap
+### 2. Create OAuth Client for MCP Server Bootstrap
 
-This client is used for the one-time shared token bootstrap flow.
+This client is used for the one-time token bootstrap flow to authenticate in Google Calendar.
 
 1. Go to **Google Auth Platform > Clients > Create client**.
 2. Application type: **Web application**.
@@ -76,7 +87,7 @@ Whitelist the client IDs in `.env` (comma-separated):
 GOOGLE_OAUTH_ALLOWED_AUDIENCES=your-claude-client-id,your-chatgpt-client-id
 ```
 
-### 4. Bootstrap Shared Token (One-Time)
+### 4. Bootstrap Auth Token (One-Time) for MCP Server
 
 1. Run the bootstrap command:
 
@@ -84,7 +95,7 @@ GOOGLE_OAUTH_ALLOWED_AUDIENCES=your-claude-client-id,your-chatgpt-client-id
     php artisan app:google-calendar:bootstrap
     ```
 
-2. Open the printed URL, sign in with the shared Google account, and grant access.
+2. Open the printed URL, sign in with your Google account, and grant access.
 3. On success, the app stores token data in `storage/app/mcp/google-calendar-tokens.json`.
 
 Check token status at any time:
