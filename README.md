@@ -104,7 +104,23 @@ Check token status at any time:
 php artisan app:google-calendar:token:status
 ```
 
-### 5. Move to Production (Recommended)
+### 5. Connect an MCP Client
+
+Add the MCP server in your client of choice using the OAuth credentials from Step 3.
+
+**Claude:**
+
+1. Go to **Settings > Connectors > Add custrom connector** and enter the server URL (e.g. `https://your-domain.com/mcp`) and (under "Advanced settings") OAuth client ID and secret.
+2. Complete the Google OAuth consent flow when prompted. You may need to explicitly click the "Connect" button on connector's page to proceed.
+3. Try a simple prompt like _"Add Haircut to my calendar tomorrow at 10am"_ to verify the connection.
+
+**ChatGPT:**
+
+1. Go to **Settings > Apps > Create app** (requires "Developer mode" to be enabled in Advanced settings) and enter the server URL (e.g. `https://your-domain.com/mcp`), OAuth client ID and secret.
+2. Complete the Google OAuth consent flow when prompted. You may need to explicitly click the "Connect" button on the app's page to proceed.
+3. Try a simple prompt like _"Add Haircut to my calendar tomorrow at 10am"_ to verify the connection.
+
+### 6. Move to Production (Recommended)
 
 While in **Testing** mode, Google expires refresh tokens after 7 days — meaning you'd need to re-bootstrap weekly. To avoid this, publish your app to production **without verification**:
 
