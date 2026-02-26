@@ -104,9 +104,19 @@ Check token status at any time:
 php artisan app:google-calendar:token:status
 ```
 
+### 5. Move to Production (Recommended)
+
+While in **Testing** mode, Google expires refresh tokens after 7 days — meaning you'd need to re-bootstrap weekly. To avoid this, publish your app to production **without verification**:
+
+1. Go to **Google Auth Platform > Audience**.
+2. Under **Publishing status**, click **Publish App** and confirm.
+3. Your app is now in production. Since it uses sensitive scopes, Google will show an "unverified app" warning during consent — this is expected and only affects the bootstrap flow (not MCP clients).
+4. Re-run the bootstrap flow from Step 4 to obtain a non-expiring refresh token.
+
+> **Note:** Verification is only required if your app serves third-party users. For personal use, publishing without verification is sufficient.
+
 ## Secret Rotation 🔄
 
 1. Rotate the OAuth client secret in Google Cloud Console.
 2. Update the corresponding `.env` values.
-3. Delete `storage/app/mcp/google-calendar-tokens.json`.
-4. Re-run the bootstrap flow to obtain a new refresh token.
+3. Re-run the bootstrap flow to obtain a new refresh token.
